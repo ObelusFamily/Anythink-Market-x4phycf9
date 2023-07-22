@@ -4,6 +4,14 @@ var Item = mongoose.model("Item");
 var Comment = mongoose.model("Comment");
 var User = mongoose.model("User");
 var auth = require("../auth");
+var openai = require('openai');
+
+const configuration = new openai.Configuration({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+const openaiUse = new openai.OpenAIApi(configuration);
+
 const { sendEvent } = require("../../lib/event");
 
 // Preload item objects on routes with ':item'
@@ -146,6 +154,11 @@ router.post("/", auth.required, function(req, res, next) {
 
       var item = new Item(req.body.item);
 
+      openaiUse.createImage(item.title).then((result) => {
+        console.log(result);
+        item.image = result;
+      });
+
       item.seller = user;
 
       return item.save().then(function() {
@@ -184,6 +197,9 @@ router.put("/:item", auth.required, function(req, res, next) {
 
       if (typeof req.body.item.image !== "undefined") {
         req.item.image = req.body.item.image;
+      } else {
+        // const dalle = new Dalle();
+        req.item.image = openaiUse.createImage(req.item.title);
       }
 
       if (typeof req.body.item.tagList !== "undefined") {
