@@ -4,15 +4,16 @@ var Item = mongoose.model("Item");
 var Comment = mongoose.model("Comment");
 var User = mongoose.model("User");
 var auth = require("../auth");
-var openai = require('openai');
+// var openai = require('openai');
 
-const configuration = new openai.Configuration({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+// const configuration = new openai.Configuration({
+//   apiKey: process.env.OPENAI_API_KEY,
+// });
 
-const openaiUse = new openai.OpenAIApi(configuration);
+// const openaiUse = new openai.OpenAIApi(configuration);
 
 const { sendEvent } = require("../../lib/event");
+const { default: generateImage } = require("./generateImage");
 
 // Preload item objects on routes with ':item'
 router.param("item", function(req, res, next, slug) {
@@ -147,17 +148,20 @@ router.get("/feed", auth.required, function(req, res, next) {
 
 router.post("/", auth.required, function(req, res, next) {
   User.findById(req.payload.id)
-    .then(function(user) {
+    .then(async function(user) {
       if (!user) {
         return res.sendStatus(401);
       }
 
       var item = new Item(req.body.item);
 
-      openaiUse.createImage(item.title).then((result) => {
-        console.log(result);
-        item.image = result;
-      });
+      if (!item.image) {
+        // console.log(item)
+        item.image = await generateImage(item.title);
+        // openaiUse.createImage(item.title).then((result) => {
+        //   item.image = result;
+        // });
+      }
 
       item.seller = user;
 
@@ -197,9 +201,9 @@ router.put("/:item", auth.required, function(req, res, next) {
 
       if (typeof req.body.item.image !== "undefined") {
         req.item.image = req.body.item.image;
-      } else {
-        // const dalle = new Dalle();
-        req.item.image = openaiUse.createImage(req.item.title);
+      // } else {
+      //   // const dalle = new Dalle();
+      //   req.item.image = openaiUse.createImage(req.item.title);
       }
 
       if (typeof req.body.item.tagList !== "undefined") {
