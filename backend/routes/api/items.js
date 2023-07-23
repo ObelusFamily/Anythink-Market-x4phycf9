@@ -4,16 +4,9 @@ var Item = mongoose.model("Item");
 var Comment = mongoose.model("Comment");
 var User = mongoose.model("User");
 var auth = require("../auth");
-// var openai = require('openai');
-
-// const configuration = new openai.Configuration({
-//   apiKey: process.env.OPENAI_API_KEY,
-// });
-
-// const openaiUse = new openai.OpenAIApi(configuration);
 
 const { sendEvent } = require("../../lib/event");
-const { default: generateImage } = require("./generateImage");
+const generateImage = require("./generateImage");
 
 // Preload item objects on routes with ':item'
 router.param("item", function(req, res, next, slug) {
@@ -154,8 +147,10 @@ router.post("/", auth.required, function(req, res, next) {
       }
 
       var item = new Item(req.body.item);
+      console.log(item)
 
       if (!item.image) {
+        console.log("INSIDE IF");
         // console.log(item)
         item.image = await generateImage(item.title);
         // openaiUse.createImage(item.title).then((result) => {

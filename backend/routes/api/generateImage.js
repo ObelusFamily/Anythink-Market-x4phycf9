@@ -1,22 +1,26 @@
-var axios = require("axios");
+// var axios = require("axios");
+// import { Configuration, OpenAIApi } from "openai";
+const {Configuration, OpenAIApi} = require('openai')
+
+const configuration = new Configuration({
+	apiKey: process.env.OPENAI_API_KEY
+});
+
+const openai = new OpenAIApi(configuration);
 
 async function generateImage(prompt) {
-    return await axios.post('https://api.openai.com/v1/images/generations', JSON.stringify({
-        'prompt': `${prompt}`,
-        'n': 1,
-        'size': '256x256'
-    }), {
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
-        }
-    }).then(function (response) {
-        return response.data.data[0].url;
+    return await openai.createImage({
+        prompt: prompt,
+        n: 1,
+      size: "512x512",
+    }).then(() => console.log('hurray')).catch((error) => {
+        if (error.response) {
+            console.log("Avatar error status: ", error.response.status);
+            console.log("Avatar error data: ", error.response.data);
+          } else {
+            console.log("Avatar error message: ", error.message);
+          }
     })
-        .catch(function (error) {
-            console.log(`Image genrator failed with the error: ${error}`)
-            return '';
-        });
-    }
+}
 
 module.exports = generateImage;
