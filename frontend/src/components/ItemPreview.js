@@ -17,8 +17,6 @@ const mapDispatchToProps = (dispatch) => ({
     }),
 });
 
-const placeholderImage = "/placeholder.png";
-
 const ItemPreview = (props) => {
   const item = props.item;
 
@@ -39,7 +37,7 @@ const ItemPreview = (props) => {
     >
       <img
         alt="item"
-        src={item.image || placeholderImage}
+        src={item.image}
         className="card-img-top item-img"
         style={{ borderRadius: "20px" }}
       />
